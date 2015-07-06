@@ -1,5 +1,5 @@
 #CircileImageView
-CircleImageView is a circle image view (that's bullshit).
+CircleImageView is a circle image view (that's nonsense).
 
 It's a lightweight widget and compatible with other image loading libraries, like ImageLoader & DummyPicLoader (Oh my beloved DPL).
 
@@ -23,4 +23,4 @@ It's a lightweight widget and compatible with other image loading libraries, lik
 ##Is it safe?
 It's safe when using image loaders mentioned above.
 
-It MAY cause an OOM if you specify a big image directly to it.
+It MAY cause an OOM if you specify a big image WITHOUT any image loaders to it.
