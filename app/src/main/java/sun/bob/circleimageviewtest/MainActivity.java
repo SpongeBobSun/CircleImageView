@@ -18,11 +18,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        ((CircleView) findViewById(R.id.id_circleview)).setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.test));
-//        DummyPicLoader.getInstance(this).loadImageFromUri("android.resource://sun.bob.circleimageviewtest/"+R.drawable.test,
-//                (ImageView)findViewById(R.id.id_circleview));
-//        DummyPicLoader.getInstance(this).loadImageFromUrl("http://www.themoviethemesong.com/wp-content/uploads/2014/05/Futurama-1.png"
-//                                        ,(ImageView)findViewById(R.id.id_circleview));
+        CircleView view = (CircleView) findViewById(R.id.id_circleimageview);
+        DummyPicLoader.getInstance(this).loadImageFromUri("android.resource://sun.bob.circleimageviewtest/" + R.drawable.zoidberg, view);
     }
 
     @Override

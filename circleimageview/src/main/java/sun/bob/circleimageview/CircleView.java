@@ -42,11 +42,18 @@ public class CircleView extends ImageView {
     @Override
     public void setImageBitmap(Bitmap bmp){
         this.defaultImgId = -1;
-        super.setImageBitmap(bmp);
+        //Crop the Bitmap
+        Bitmap tmp = Bitmap.createBitmap(bmp,
+                (bmp.getWidth() - width) / 2,
+                (bmp.getHeight() - height) / 2,
+                width,
+                height);
+        bmp.recycle();
+        super.setImageBitmap(tmp);
         shader = new BitmapShader(((BitmapDrawable) getDrawable()).getBitmap(), Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
 
         drawable.getPaint().setShader(shader);
-        drawable.setBounds(0,0,width, height);
+        drawable.setBounds(0, 0, width, height);
     }
 
     @Override

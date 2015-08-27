@@ -47,8 +47,10 @@ public class DPLTask extends AsyncTask<String, Integer, Bitmap> {
     String cacheKey;
     private Context context;
     private boolean resized;
+    private boolean cropped = false;
     private int defaultImgResId = 0;
     private boolean somethingWrong;
+    private int imageViewWidth = 0, imageViewHeight = 0;
 
     public DPLTask(ImageView imageView,int type){
         imageViewWeakReference = new WeakReference(imageView);
@@ -74,12 +76,14 @@ public class DPLTask extends AsyncTask<String, Integer, Bitmap> {
             cacheKey = cacheKey + options.outWidth + options.outHeight;
         }
 
+        BitmapFactory.Options fakeOption = null;
+
         InputStream inputStream = null;
 
         if (this.type == TASK_TYPE_FILE) {
 
             if (resized){
-                BitmapFactory.Options fakeOption = new BitmapFactory.Options();
+                fakeOption = new BitmapFactory.Options();
                 fakeOption.inJustDecodeBounds = true;
                 BitmapFactory.decodeFile(strings[0],fakeOption);
                 options.inScaled = true;
@@ -95,7 +99,6 @@ public class DPLTask extends AsyncTask<String, Integer, Bitmap> {
                 inputStream = new FileInputStream(strings[0]);
                 ((FileInputStream)inputStream).getFD();
             } catch (FileNotFoundException e) {
-//                e.printStackTrace();
                 somethingWrong = true;
                 if (defaultImgResId == 0) {
                     return Bitmap.createBitmap(options.outWidth == 0 ? 300: options.outWidth,
@@ -104,7 +107,6 @@ public class DPLTask extends AsyncTask<String, Integer, Bitmap> {
                     return null;
                 }
             } catch (IOException e) {
-//                e.printStackTrace();
                 somethingWrong = true;
                 if (defaultImgResId == 0) {
                     return Bitmap.createBitmap(options.outWidth == 0 ? 300: options.outWidth,
@@ -125,7 +127,7 @@ public class DPLTask extends AsyncTask<String, Integer, Bitmap> {
                 options.inPreferredConfig = Bitmap.Config.RGB_565;
 
                 if (resized) {
-                    BitmapFactory.Options fakeOption = new BitmapFactory.Options();
+                    fakeOption = new BitmapFactory.Options();
 //                    fakeOption.inJustDecodeBounds = true;
                     DPLDiskCache.getStaticInstance().put(cacheKey,
                             BitmapFactory.decodeStream(urlConnection.getInputStream(), new Rect(), fakeOption)
@@ -163,7 +165,7 @@ public class DPLTask extends AsyncTask<String, Integer, Bitmap> {
             try{
                 inputStream = contentResolver.openInputStream(bmpUri);
                 if (resized) {
-                    BitmapFactory.Options fakeOption = new BitmapFactory.Options();
+                    fakeOption = new BitmapFactory.Options();
                     fakeOption.inJustDecodeBounds = true;
                     BitmapFactory.decodeStream(inputStream,new Rect(),fakeOption);
                     options.inScaled = true;
@@ -184,8 +186,9 @@ public class DPLTask extends AsyncTask<String, Integer, Bitmap> {
                 }
             }
         }
-
-        return BitmapFactory.decodeStream(inputStream,new Rect(0,0,options.outWidth,options.outHeight),options);
+        //Todo
+        //Crops processing after the bitmap is created.
+        return BitmapFactory.decodeStream(inputStream,new Rect(0, 0, options.outWidth, options.outHeight),options);
     }
 
     @Override
@@ -204,6 +207,16 @@ public class DPLTask extends AsyncTask<String, Integer, Bitmap> {
                 getBitmapWorkerTask(imageView);
         if (this == dplTask && imageView != null/* &&
                 ((defaultImgResId !=0 && !somethingWrong) || (defaultImgResId == 0 && somethingWrong))*/) {
+
+            if (cropped){
+                Bitmap tmp = Bitmap.createBitmap(result,
+                                                (result.getWidth() - imageViewWidth) / 2,
+                                                (result.getHeight() - imageViewHeight) / 2,
+                                                imageViewWidth,
+                                                imageViewHeight);
+                result.recycle();
+                result = tmp;
+            }
             imageView.setImageBitmap(result);
             if (defaultImgResId ==0 && somethingWrong)
                 return;
@@ -225,9 +238,13 @@ public class DPLTask extends AsyncTask<String, Integer, Bitmap> {
         return null;
     }
 
-    public void setOptions(BitmapFactory.Options options, boolean resized){
+    public void setOptions(BitmapFactory.Options options, boolean resized, boolean cropped){
+
         this.options = options;
         this.resized = resized;
+        this.cropped = cropped;
+        this.imageViewWidth = options.outWidth;
+        this.imageViewHeight = options.outHeight;
     }
 
     public void setDefaultImgResId(int id){
